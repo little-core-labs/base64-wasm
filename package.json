@@ -1,6 +1,6 @@
 {
   "name": "base64-wasm",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A base64 implementation compiled to WASM format",
   "main": "index.js",
   "directories": {
