@@ -1,0 +1,24 @@
+{
+  "name": "base64-wasm",
+  "version": "0.0.0",
+  "description": "A base64 implementation compiled to WASM format",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "nyc -x tests -x base64.js tape tests/*.js"
+  },
+  "keywords": [
+    "base64",
+    "wasm",
+    "codec"
+  ],
+  "author": "Joseph Werle <werle@littlestar.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "nyc": "^15.0.1",
+    "tape": "^5.0.0",
+    "wasm2js": "^0.2.0"
+  }
+}

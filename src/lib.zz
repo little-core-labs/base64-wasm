@@ -1,0 +1,206 @@
+static u8 table[] = {
+  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+  'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+  'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+  'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+  'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+  'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+  'w', 'x', 'y', 'z', '0', '1', '2', '3',
+  '4', '5', '6', '7', '8', '9', '+', '/'
+};
+
+export fn encode_block(u8 mut *out, u8 *bytes)
+  where safe(out)
+  where safe(bytes)
+  where 4 == len(out)
+  where 3 == len(bytes)
+{
+  out[0] =  (bytes[0] & 0xfc) >> 2;
+  out[1] = ((bytes[0] & 0x03) << 4) + ((bytes[1] & 0xf0) >> 4);
+  out[2] = ((bytes[1] & 0x0f) << 2) + ((bytes[2] & 0xc0) >> 6);
+  out[3] =   bytes[2] & 0x3f;
+}
+
+export fn decode_block(u8 mut *out, u8 mut *bytes)
+  where safe(out)
+  where safe(bytes)
+  where 3 == len(out)
+  where 4 == len(bytes)
+{
+  for (usize mut j = 0; j < 4; ++j) {
+    for (usize mut l = 0; l < 64; ++l) {
+      if bytes[j] == table[l] {
+        bytes[j] = (u8) l;
+        break;
+      }
+    }
+  }
+
+  out[0] =  (bytes[0]        << 2) + ((bytes[1] & 0x30) >> 4);
+  out[1] = ((bytes[1] & 0xf) << 4) + ((bytes[2] & 0x3c) >> 2);
+  out[2] = ((bytes[2] & 0x3) << 6) +   bytes[3];
+}
+
+export fn encode(u8 mut *out, u8 *bytes, usize length) -> usize
+  where safe(out)
+  where safe(bytes)
+  where len(bytes) >= length
+{
+  usize mut pending = length;
+  usize mut counter = 0;
+  usize mut offset = 0;
+  usize size = encoding_length(length);
+
+  u8 mut buf[4];
+  u8 mut tmp[3];
+
+  static_attest(len(out) >= size);
+  zeros(out, size);
+
+  while 0 != pending-- {
+    usize k = length - pending - 1;
+
+    static_attest(len(bytes) > k);
+    static_attest(len(tmp) > counter);
+
+    tmp[counter] = bytes[k];
+
+    counter++;
+
+    if 3 == counter {
+      encode_block(buf, tmp);
+
+      for (counter = 0; counter < 4; ++counter) {
+        let x = (usize) buf[counter];
+        static_attest(len(table) > x);
+        static_attest(len(out) > offset);
+        out[offset] = table[x];
+        offset++;
+      }
+
+      counter = 0;
+    }
+  }
+
+  if counter > 0 {
+    for (usize mut j = counter; j < 3; ++j) {
+      tmp[j] = 0;
+    }
+
+    encode_block(buf, tmp);
+
+    for (usize mut j = 0; (j < counter + 1); ++j) {
+      let x = (usize) buf[j];
+      static_attest(len(table) > x);
+      static_attest(len(out) > offset);
+      out[offset] = table[x];
+      offset++;
+    }
+
+    while counter++ < 3 {
+      static_attest(len(out) > offset);
+      out[offset] = (u8) '='; // padding
+      offset++;
+    }
+  }
+
+  return size;
+}
+
+export fn decode(u8 mut *out, u8 *bytes, usize length) -> usize
+  where safe(out)
+  where safe(bytes)
+  where len(bytes) >= length
+  where length >= 4
+{
+  usize mut pending = length;
+  usize mut counter = 0;
+  usize mut offset = 0;
+  usize mut index = 0;
+
+  u8 mut buf[3];
+  u8 mut tmp[4];
+
+  while 0 != pending-- {
+    static_attest(len(bytes) > index);
+
+    // break on first padding character
+    if (u8) '=' == bytes[index] {
+      break;
+    }
+
+    // break if byte not found in codec table
+    if -1 == table_index(bytes[index]) {
+      break;
+    }
+
+    tmp[counter] = bytes[index];
+
+    counter++;
+    index++;
+
+    if 4 == counter {
+      decode_block(buf, tmp);
+
+      for (usize mut j = 0; j < 3; ++j) {
+        static_attest(len(out) > offset);
+        out[offset] = buf[j];
+        offset++;
+      }
+
+      counter = 0;
+    }
+  }
+
+  if counter > 0 {
+    for (usize mut j = counter; j < 4; ++j) {
+      tmp[j] = 0;
+    }
+
+    decode_block(buf, tmp);
+
+    for (usize mut j = 0; j < counter - 1; ++j) {
+      static_attest(len(out) > offset);
+      out[offset] = buf[j];
+      offset++;
+    }
+  }
+
+  return offset;
+}
+
+export fn encoding_length(usize length) -> usize {
+  // calculates the size in bytes of the encoded byte length
+  return ((3 + (4 * length / 3)) & ~3);
+}
+
+export fn decoding_length(usize length, u8 *bytes) -> usize
+  where length >= 4
+  where safe(bytes)
+  where len(bytes) >= length
+{
+  usize mut padding = 0;
+  if (u8) '=' == bytes[length - 1] { padding++; }
+  if (u8) '=' == bytes[length - 2] { padding++; }
+  // calculates the size in bytes of the decoded byte length
+  return (3 * (length / 4)) - padding;
+}
+
+fn table_index(u8 byte) -> int {
+  for (usize mut j = 0; j < static(len(table)); ++j) {
+    if byte == table[j] {
+      return (int) j;
+    }
+  }
+
+  return -1;
+}
+
+fn zeros(u8 mut *bytes, usize count)
+  where safe(bytes)
+  where len(bytes) >= count
+{
+  for (usize mut i = 0; i < count; ++i) {
+    bytes[i] = 0;
+  }
+}

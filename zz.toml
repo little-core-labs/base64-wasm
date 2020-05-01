@@ -1,0 +1,26 @@
+[project]
+version = "0.0.0"
+name = "base64"
+cincludes = []
+cobjects = []
+pkgconfig = []
+
+lflags = [
+  "-Wl,--export-dynamic", ## export all dynamic symbols, like functions
+  "-Wl,--export-all", ## export all symbols so we get access to __heap_base, etc
+  "-Wl,--no-entry", ## don't look for a _start function
+  "-nostartfiles", ## no startup files
+]
+
+cflags = [
+  "--target=wasm32-unknown-wasi", ## WASM/WASI clang target
+  "--sysroot=/opt/wasi-libc", ## path to installed wasi-libc directory
+  "-nostdlib", ## disable stdlib
+]
+
+[variants]
+default = []
+
+[dependencies]
+
+[repos]
