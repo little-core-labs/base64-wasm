@@ -23,5 +23,13 @@
   },
   "dependencies": {
     "nanoassert": "^2.0.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/little-core-labs/base64-wasm.git"
+  },
+  "bugs": {
+    "url": "https://github.com/little-core-labs/base64-wasm/issues"
+  },
+  "homepage": "https://github.com/little-core-labs/base64-wasm#readme"
 }
