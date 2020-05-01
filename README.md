@@ -51,6 +51,18 @@ module is loaded.
 await b64.ready()
 ```
 
+## Limits
+
+### Initial Memory
+
+By default, this module allocates 2 pages of memory for the WebAssembly module.
+That is `2 * 64 * 1024` bytes.
+
+### Maximum Memory
+
+This module allows at most 256 pages of memory. That is `256 * 64 *
+1024` bytes.
+
 ## License
 
 MIT

@@ -3,13 +3,13 @@ const test = require('tape')
 const b64 = require('../')
 
 test('encode', (t) => {
-  const message = crypto.randomBytes(32)
+  const message = crypto.randomBytes(40 * 1024)
   t.equal(message.toString('base64'), b64.encode(message).toString())
   t.end()
 })
 
 test('decode', (t) => {
-  const message = crypto.randomBytes(32)
+  const message = crypto.randomBytes(40 * 1024)
   t.equal(
     message.toString('hex'),
     b64.decode(Buffer.from(message.toString('base64'))).toString('hex')

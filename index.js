@@ -1,11 +1,12 @@
+const createBase64 = require('./base64')
 const assert = require('nanoassert')
-const memory = new WebAssembly.Memory({ initial: 2, maximum: 2 })
-const wasm = require('./base64')({ imports: { env: { memory }}})
 
 const WASM_NOT_LOADED_ERR = 'base64-wasm has not loaded yet.'
+const BYTES_PER_PAGE = 64 * 1024
+const MAX_PAGES = 256
 
-// pointer to containter memory (heap)
-const heap = Buffer.from(memory.buffer)
+const memory = new WebAssembly.Memory({ initial: 2, maximum: MAX_PAGES })
+const wasm = createBase64({ imports: { env: { memory }}})
 
 const promise = new Promise((resolve, reject) => {
   wasm.onload((err) => {
@@ -15,9 +16,26 @@ const promise = new Promise((resolve, reject) => {
   })
 })
 
-function pointer() {
+function pointer(offset) {
   // pointer to heap head
-  return wasm.exports.__heap_base + 0
+  return wasm.exports.__heap_base + (offset || 0)
+}
+
+function grow(size) {
+  const needed = Math.ceil(.Math.abs(size - memory.buffer.byteLength) / BYTES_PER_PAGE)
+  memory.grow(Math.max(0, needed))
+}
+
+function sync(size) {
+  const pages = memory.buffer.byteLength / BYTES_PER_PAGE
+  const needed = Math.floor((memory.buffer.byteLength + size) / BYTES_PER_PAGE)
+
+  if (size && needed > pages) {
+    grow(size)
+  }
+
+  // pointer to containter memory (heap)
+  return Buffer.from(memory.buffer)
 }
 
 function toBuffer(buffer, size, offset) {
@@ -53,6 +71,9 @@ function encode(input, output, offset) {
   // output size
   const size = encodingLength(input)
 
+  // sync and grow memory if needed and get a pointer to heap
+  const heap = sync(input.length + size)
+
   // heap pointer
   const ptr = pointer()
 
@@ -79,6 +100,9 @@ function decode(input, output, offset) {
   // output size
   const size = decodingLength(input)
 
+  // sync and grow memory if needed and get a pointer to heap
+  const heap = sync(input.length + size)
+
   // heap pointer
   const ptr = pointer()
 
@@ -98,7 +122,6 @@ function decode(input, output, offset) {
 
 function encodingLength(input) {
   assert(wasm.exports, WASM_NOT_LOADED_ERR)
-
   return wasm.exports.base64_encoding_length(input.length)
 }
 
@@ -106,6 +129,7 @@ function decodingLength(input) {
   assert(wasm.exports, WASM_NOT_LOADED_ERR)
 
   // heap pointer
+  const heap = sync(0)
   const ptr = pointer()
 
   input = Buffer.from(input)
