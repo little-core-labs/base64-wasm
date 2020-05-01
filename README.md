@@ -1,7 +1,7 @@
 base64-wasm
 ===========
 
-> A Base64 implementation for WebAssembly (WASM) writen in [ZZ][zz] that
+> A Base64 implementation for WebAssembly (WASM) written in [ZZ][zz] that
 > implements an [_Abstract Encoding_][abstract-encoding] interface.
 
 ## Installation
@@ -15,14 +15,17 @@ $ npm install base64-wasm
 ```js
 const b64 = require('base64-wasm')
 
-const message = Buffer.from('hello world')
-const encoded = b64.encode(message)
+// wait for module to be ready if loading in a browser environment
+b64.ready((err) => {
+  const message = Buffer.from('hello world')
+  const encoded = b64.encode(message)
 
-console.log(encoded.toString()) // aGVsbG8gd29ybGQ=
+  console.log(encoded.toString()) // aGVsbG8gd29ybGQ=
 
-const decoded = b64.decode(encoded)
+  const decoded = b64.decode(encoded)
 
-console.log(decoded.toString()) // hello world
+  console.log(decoded.toString()) // hello world
+})
 ```
 
 ## API
@@ -37,6 +40,16 @@ specified `offset`.
 
 Base64 decode an `input` optionally into `buffer` at an optionally
 specified `offset`.
+
+### `promise = ready(callback)`
+
+Returns a promise that resolves or rejects when the WebAssembly exports
+are loading. In some cases, this may happen synchronously when this
+module is loaded.
+
+```js
+await b64.ready()
+```
 
 ## License
 

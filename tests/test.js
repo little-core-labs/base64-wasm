@@ -16,3 +16,10 @@ test('decode', (t) => {
   )
   t.end()
 })
+
+test('ready', (t) => {
+  b64.ready((err) => {
+    t.error(err)
+    t.end()
+  })
+})
