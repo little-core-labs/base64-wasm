@@ -18,8 +18,13 @@ TARGET = base64.wasm
 CFLAGS += --target=wasm32-unknown-unknown # WASM clang target
 CFLAGS += -nostdlib # disable stdlib
 
-LDFLAGS += -Wl,--export-dynamic # export all dynamic symbols, like functions
-LDFLAGS += -Wl,--export-all # export all symbols so we get access to __heap_base, etc
+LDFLAGS += -Wl,--export=__heap_base
+LDFLAGS += -Wl,--export=base64_encode
+LDFLAGS += -Wl,--export=base64_decode
+LDFLAGS += -Wl,--export=base64_encoding_length
+LDFLAGS += -Wl,--export=base64_decoding_length
+#LDFLAGS += -Wl,--export-dynamic # export all dynamic symbols, like functions
+#LDFLAGS += -Wl,--export-all # export all symbols so we get access to __heap_base, etc
 LDFLAGS += -Wl,--import-memory # import memory from runtime
 LDFLAGS += -Wl,--no-entry # don't look for a _start function
 LDFLAGS += -nostartfiles # no startup files
