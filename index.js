@@ -22,7 +22,7 @@ function pointer(offset) {
 }
 
 function grow(size) {
-  const needed = Math.ceil(.Math.abs(size - memory.buffer.byteLength) / BYTES_PER_PAGE)
+  const needed = Math.ceil(Math.abs(size - memory.buffer.byteLength) / BYTES_PER_PAGE)
   memory.grow(Math.max(0, needed))
 }
 
