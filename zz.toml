@@ -1,5 +1,5 @@
 [project]
-version = "0.0.0"
+version = "0.1.8"
 name = "base64"
 cincludes = []
 cobjects = []
@@ -14,7 +14,7 @@ lflags = [
 ]
 
 cflags = [
-  "--target=wasm32-unknown-wasi", ## WASM/WASI clang target
+  "--target=wasm32-unknown-unknown", ## WASM clang target
   "-nostdlib", ## disable stdlib
 ]
 
