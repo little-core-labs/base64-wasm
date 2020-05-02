@@ -15,7 +15,6 @@ lflags = [
 
 cflags = [
   "--target=wasm32-unknown-wasi", ## WASM/WASI clang target
-  "--sysroot=/opt/wasi-libc", ## path to installed wasi-libc directory
   "-nostdlib", ## disable stdlib
 ]
 
