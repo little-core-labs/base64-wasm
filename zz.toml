@@ -5,18 +5,8 @@ cincludes = []
 cobjects = []
 pkgconfig = []
 
-lflags = [
-  "-Wl,--export-dynamic", ## export all dynamic symbols, like functions
-  "-Wl,--export-all", ## export all symbols so we get access to __heap_base, etc
-  "-Wl,--import-memory", ## import memory from runtime
-  "-Wl,--no-entry", ## don't look for a _start function
-  "-nostartfiles", ## no startup files
-]
-
-cflags = [
-  "--target=wasm32-unknown-unknown", ## WASM clang target
-  "-nostdlib", ## disable stdlib
-]
+lflags = []
+cflags = []
 
 [variants]
 default = []
