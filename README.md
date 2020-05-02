@@ -6,8 +6,16 @@ base64-wasm
 
 ## Installation
 
+### Node
+
 ```sh
 $ npm install base64-wasm
+```
+
+### WAPM
+
+```sh
+$ wapm install jwerle/base64-wasm
 ```
 
 ## Usage
