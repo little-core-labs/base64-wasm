@@ -1,5 +1,5 @@
 [package]
-name = "little-core-labs/base64-wasm"
+name = "jwerle/base64-wasm"
 version = "0.1.6"
 description = "A base64 implementation written in ZZ compiled to WASM"
 license = "MIT"
