@@ -1,6 +1,6 @@
 [package]
 name = "jwerle/base64-wasm"
-version = "0.1.4"
+version = "0.1.5"
 description = "A base64 implementation written in ZZ compiled to WASM"
 license = "MIT"
 repository = "jwerle/base64-wasm"
